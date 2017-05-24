@@ -1,0 +1,16 @@
+.pages {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+}
+
+.page {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    flex: 1 0 100%;
+    transition: transform .5s ease-in;
+    will-change: transform;
+}
