@@ -1,4 +1,5 @@
 import { createFontLoader } from './lib/Fontloader';
+import { Main } from '../elm/Main.elm';
 
 /**
  * Beispiel:
@@ -16,3 +17,7 @@ const fontLoader = createFontLoader();
 fontLoader.loadAll()
     .then(data => document.documentElement.className += ' fl')
     .catch(e => console.warn('Fonts could not be loaded', e))
+
+Main.embed(
+    document.getElementById('root')
+)

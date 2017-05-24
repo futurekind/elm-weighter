@@ -113,6 +113,7 @@ module.exports = {
                     /\.jpe?g$/,
                     /\.png$/,
                     /\.svg$/,
+                    /\.elm$/,
                 ],
                 loader: 'file-loader',
                 options: {
@@ -128,6 +129,15 @@ module.exports = {
                     name: 'static/media/[name].[hash:8].[ext]',
                 },
             },
+
+            {
+                test: /\.elm$/,
+                exclude: [/elm-stuff/, /node_modules/],
+                use: {
+                    loader: 'elm-webpack-loader',
+                    options: {}
+                }
+            }
 
         ]
 
