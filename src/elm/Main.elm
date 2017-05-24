@@ -3,34 +3,45 @@ module Main exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Mouse
 
 
 type alias Model =
-    { pageIndex : Int }
+    { pageIndex : Int, dragStartX : Int }
 
 
 init : ( Model, Cmd Msg )
 init =
     ( { pageIndex = 0
+      , dragStartX = 0
       }
     , Cmd.none
     )
 
 
 type Msg
-    = IncrementPageIndex
+    = DragStart Mouse.Position
+    | DragEnd Mouse.Position
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        IncrementPageIndex ->
-            ( { model | pageIndex = getPageIndex <| model.pageIndex + 1 }, Cmd.none )
+    case Debug.log "click" msg of
+        DragStart pos ->
+            ( { model | dragStartX = pos.x }, Cmd.none )
+
+        DragEnd pos ->
+            if pos.x < model.dragStartX then
+                ( { model | pageIndex = getPageIndex <| model.pageIndex + 1 }, Cmd.none )
+            else
+                ( { model | pageIndex = getPageIndex <| model.pageIndex - 1 }, Cmd.none )
 
 
 getPageIndex : Int -> Int
 getPageIndex nextIndex =
-    if Debug.log "next" nextIndex == 3 then
+    if nextIndex == 3 then
+        2
+    else if nextIndex == -1 then
         0
     else
         nextIndex
@@ -38,14 +49,16 @@ getPageIndex nextIndex =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Sub.batch
+        [ Mouse.downs DragStart
+        , Mouse.ups DragEnd
+        ]
 
 
 view : Model -> Html Msg
 view model =
     div
         [ class "pages"
-        , onClick IncrementPageIndex
         ]
         [ div
             [ class "page"
@@ -85,7 +98,7 @@ getTranslateValue index pageIndex =
             else
                 100
     in
-        "translateX(" ++ (toString value) ++ "%)"
+    "translateX(" ++ toString value ++ "%)"
 
 
 main : Program Never Model Msg
