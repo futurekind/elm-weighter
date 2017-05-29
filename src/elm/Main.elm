@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Page
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import TouchEvents
@@ -27,7 +28,7 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case Debug.log "click" msg of
+    case msg of
         TouchStart touch ->
             ( { model | touchStartX = touch.clientX }, Cmd.none )
 
@@ -60,45 +61,10 @@ view model =
         , TouchEvents.onTouchEvent TouchEvents.TouchStart TouchStart
         , TouchEvents.onTouchEvent TouchEvents.TouchEnd TouchEnd
         ]
-        [ div
-            [ class "page"
-            , style
-                [ ( "background", "red" )
-                , ( "transform", getTranslateValue 0 model.pageIndex )
-                ]
-            ]
-            [ text "Rot" ]
-        , div
-            [ class "page"
-            , style
-                [ ( "background", "green" )
-                , ( "transform", getTranslateValue 1 model.pageIndex )
-                ]
-            ]
-            [ text "green" ]
-        , div
-            [ class "page"
-            , style
-                [ ( "background", "blue" )
-                , ( "transform", getTranslateValue 2 model.pageIndex )
-                ]
-            ]
-            [ text "blue" ]
+        [ Page.view 0 model.pageIndex
+        , Page.view 1 model.pageIndex
+        , Page.view 2 model.pageIndex
         ]
-
-
-getTranslateValue : Int -> Int -> String
-getTranslateValue index pageIndex =
-    let
-        value =
-            if index == pageIndex then
-                0
-            else if index < pageIndex then
-                -100
-            else
-                100
-    in
-        "translateX(" ++ toString value ++ "%)"
 
 
 main : Program Never Model Msg
