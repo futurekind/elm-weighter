@@ -5,7 +5,8 @@ import Html.Attributes exposing (..)
 
 
 type alias Page =
-    { class : String }
+    { class : String
+    }
 
 
 getTranslateValue : Int -> Int -> String
@@ -22,10 +23,10 @@ getTranslateValue index pageIndex =
         "translateX(" ++ toString value ++ "%)"
 
 
-view : Int -> Int -> Page -> Html msg
-view index currentIndex model =
+view : Int -> Int -> Html msg -> Page -> Html msg
+view index currentIndex children model =
     div
         [ class <| "page " ++ model.class
         , style [ ( "transform", getTranslateValue index currentIndex ) ]
         ]
-        [ text <| "Page " ++ toString index ]
+        [ children ]

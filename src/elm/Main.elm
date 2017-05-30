@@ -18,7 +18,8 @@ init =
     ( { pageIndex = 0
       , touchStartX = 0.0
       , pages =
-            [ { class = "some-class" }
+            [ { class = "page--enter" }
+            , { class = "page--list" }
             ]
       }
     , Cmd.none
@@ -85,20 +86,41 @@ view model =
         , TouchEvents.onTouchEvent TouchEvents.TouchStart TouchStart
         , TouchEvents.onTouchEvent TouchEvents.TouchEnd TouchEnd
         ]
-        (List.indexedMap (\index page -> pageView index page model) model.pages)
-
-
-
--- [
--- Page.view 0 model.pageIndex model.pages
---  , Page.view 1 model.pageIndex model.pages
---  , Page.view 2 model.pageIndex model.pages
--- ]
+        (List.indexedMap
+            (\index page ->
+                pageView index page model
+            )
+            model.pages
+        )
 
 
 pageView : Int -> Page -> Model -> Html Msg
 pageView index page model =
-    Page.view index model.pageIndex page
+    let
+        children =
+            case index of
+                0 ->
+                    enterPageView model
+
+                1 ->
+                    listPageView model
+
+                _ ->
+                    div [] []
+    in
+        Page.view index model.pageIndex children page
+
+
+enterPageView : Model -> Html Msg
+enterPageView model =
+    div [ class "enter-page" ]
+        [ h1 [ class "page__title" ] [ text "some title" ] ]
+
+
+listPageView : Model -> Html Msg
+listPageView model =
+    div [ class "list-page" ]
+        [ h1 [ class "page__title" ] [ text "some title" ] ]
 
 
 main : Program Never Model Msg
