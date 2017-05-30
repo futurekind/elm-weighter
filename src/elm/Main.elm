@@ -33,10 +33,37 @@ update msg model =
             ( { model | touchStartX = touch.clientX }, Cmd.none )
 
         TouchEnd touch ->
-            if touch.clientX < model.touchStartX then
-                ( { model | pageIndex = getPageIndex <| model.pageIndex + 1 }, Cmd.none )
-            else
-                ( { model | pageIndex = getPageIndex <| model.pageIndex - 1 }, Cmd.none )
+            ( updatePageIndex touch model, Cmd.none )
+
+
+
+-- if touch.clientX < model.touchStartX then
+--     ( { model | pageIndex = getPageIndex <| model.pageIndex + 1 }, Cmd.none )
+-- else
+--     ( { model | pageIndex = getPageIndex <| model.pageIndex - 1 }, Cmd.none )
+
+
+updatePageIndex : TouchEvents.Touch -> Model -> Model
+updatePageIndex touch model =
+    let
+        direction =
+            TouchEvents.getDirectionX model.touchStartX touch.clientX
+
+        delta =
+            model.touchStartX - touch.clientX |> abs
+    in
+        if delta > 70 then
+            case direction of
+                TouchEvents.Left ->
+                    { model | pageIndex = getPageIndex <| model.pageIndex + 1 }
+
+                TouchEvents.Right ->
+                    { model | pageIndex = getPageIndex <| model.pageIndex - 1 }
+
+                _ ->
+                    model
+        else
+            model
 
 
 getPageIndex : Int -> Int
