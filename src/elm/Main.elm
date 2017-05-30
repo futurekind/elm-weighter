@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Page
+import Page exposing (Page)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import TouchEvents
@@ -9,6 +9,7 @@ import TouchEvents
 type alias Model =
     { pageIndex : Int
     , touchStartX : Float
+    , pages : List Page
     }
 
 
@@ -16,6 +17,9 @@ init : ( Model, Cmd Msg )
 init =
     ( { pageIndex = 0
       , touchStartX = 0.0
+      , pages =
+            [ { class = "some-class" }
+            ]
       }
     , Cmd.none
     )
@@ -36,13 +40,6 @@ update msg model =
             ( updatePageIndex touch model, Cmd.none )
 
 
-
--- if touch.clientX < model.touchStartX then
---     ( { model | pageIndex = getPageIndex <| model.pageIndex + 1 }, Cmd.none )
--- else
---     ( { model | pageIndex = getPageIndex <| model.pageIndex - 1 }, Cmd.none )
-
-
 updatePageIndex : TouchEvents.Touch -> Model -> Model
 updatePageIndex touch model =
     let
@@ -55,10 +52,10 @@ updatePageIndex touch model =
         if delta > 70 then
             case direction of
                 TouchEvents.Left ->
-                    { model | pageIndex = getPageIndex <| model.pageIndex + 1 }
+                    { model | pageIndex = getPageIndex (model.pageIndex + 1) (List.length model.pages) }
 
                 TouchEvents.Right ->
-                    { model | pageIndex = getPageIndex <| model.pageIndex - 1 }
+                    { model | pageIndex = getPageIndex (model.pageIndex - 1) (List.length model.pages) }
 
                 _ ->
                     model
@@ -66,10 +63,10 @@ updatePageIndex touch model =
             model
 
 
-getPageIndex : Int -> Int
-getPageIndex nextIndex =
-    if nextIndex == 3 then
-        2
+getPageIndex : Int -> Int -> Int
+getPageIndex nextIndex upperEnd =
+    if nextIndex == upperEnd then
+        upperEnd - 1
     else if nextIndex == -1 then
         0
     else
@@ -88,10 +85,20 @@ view model =
         , TouchEvents.onTouchEvent TouchEvents.TouchStart TouchStart
         , TouchEvents.onTouchEvent TouchEvents.TouchEnd TouchEnd
         ]
-        [ Page.view 0 model.pageIndex
-        , Page.view 1 model.pageIndex
-        , Page.view 2 model.pageIndex
-        ]
+        (List.indexedMap (\index page -> pageView index page model) model.pages)
+
+
+
+-- [
+-- Page.view 0 model.pageIndex model.pages
+--  , Page.view 1 model.pageIndex model.pages
+--  , Page.view 2 model.pageIndex model.pages
+-- ]
+
+
+pageView : Int -> Page -> Model -> Html Msg
+pageView index page model =
+    Page.view index model.pageIndex page
 
 
 main : Program Never Model Msg

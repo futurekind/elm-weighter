@@ -1,7 +1,11 @@
-module Page exposing (view)
+module Page exposing (view, Page)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+
+
+type alias Page =
+    { class : String }
 
 
 getTranslateValue : Int -> Int -> String
@@ -18,10 +22,10 @@ getTranslateValue index pageIndex =
         "translateX(" ++ toString value ++ "%)"
 
 
-view : Int -> Int -> Html msg
-view index currentIndex =
+view : Int -> Int -> Page -> Html msg
+view index currentIndex model =
     div
-        [ class "page"
+        [ class <| "page " ++ model.class
         , style [ ( "transform", getTranslateValue index currentIndex ) ]
         ]
         [ text <| "Page " ++ toString index ]
