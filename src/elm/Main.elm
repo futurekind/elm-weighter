@@ -1,6 +1,7 @@
 module Main exposing (..)
 
 import Page exposing (Page)
+import EnterPage
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import TouchEvents
@@ -10,6 +11,7 @@ type alias Model =
     { pageIndex : Int
     , touchStartX : Float
     , pages : List Page
+    , enterPage : EnterPage.Model
     }
 
 
@@ -19,8 +21,8 @@ init =
       , touchStartX = 0.0
       , pages =
             [ { class = "page--enter" }
-            , { class = "page--list" }
             ]
+      , enterPage = EnterPage.init
       }
     , Cmd.none
     )
@@ -29,6 +31,7 @@ init =
 type Msg
     = TouchStart TouchEvents.Touch
     | TouchEnd TouchEvents.Touch
+    | Count
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -39,6 +42,16 @@ update msg model =
 
         TouchEnd touch ->
             ( updatePageIndex touch model, Cmd.none )
+
+        Count ->
+            let
+                enterPage =
+                    model.enterPage
+
+                newEnterPage =
+                    { enterPage | count = model.enterPage.count + 1 }
+            in
+                ( { model | enterPage = newEnterPage }, Cmd.none )
 
 
 updatePageIndex : TouchEvents.Touch -> Model -> Model
@@ -100,21 +113,12 @@ pageView index page model =
         children =
             case index of
                 0 ->
-                    enterPageView model
-
-                1 ->
-                    listPageView model
+                    EnterPage.view Count model.enterPage
 
                 _ ->
                     div [] []
     in
         Page.view index model.pageIndex children page
-
-
-enterPageView : Model -> Html Msg
-enterPageView model =
-    div [ class "enter-page" ]
-        [ h1 [ class "page__title" ] [ text "some title" ] ]
 
 
 listPageView : Model -> Html Msg
