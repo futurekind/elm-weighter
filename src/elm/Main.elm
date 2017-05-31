@@ -22,7 +22,7 @@ init =
       , pages =
             [ { class = "page--enter" }
             ]
-      , enterPage = EnterPage.init
+      , enterPage = EnterPage.init { count = 85.3 }
       }
     , Cmd.none
     )

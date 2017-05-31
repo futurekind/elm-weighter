@@ -1,25 +1,26 @@
 module EnterPage exposing (view, init, Model)
 
+import Numeral
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
 
 type alias Model =
-    { count : Int }
+    { count : Float }
 
 
-init : Model
-init =
-    { count = 0 }
+init : Model -> Model
+init model =
+    model
 
 
 view : msg -> Model -> Html msg
 view msg model =
     div [ class "enter-page" ]
         [ h1
-            [ class "page__title"
+            [ class "enter-page__count"
             , onClick msg
             ]
-            [ toString model.count |> text ]
+            [ Numeral.format "0,00.00" model.count |> text ]
         ]
