@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Page exposing (Page)
 import EnterPage
+import ListPage
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import TouchEvents
@@ -12,18 +13,20 @@ type alias Model =
     , touchStartX : Float
     , pages : List Page
     , enterPage : EnterPage.Model
+    , listPage : ListPage.Model
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { pageIndex = 0
+    ( { pageIndex = 1
       , touchStartX = 0.0
       , pages =
             [ { class = "page--enter" }
-            , { class = "page--enter" }
+            , { class = "page--list" }
             ]
       , enterPage = EnterPage.init 85.3
+      , listPage = ListPage.init
       }
     , Cmd.none
     )
@@ -138,6 +141,9 @@ pageView index page model =
             case index of
                 0 ->
                     EnterPage.view IncreaseWeightValue DecreseWeightValue Save model.enterPage
+
+                1 ->
+                    ListPage.view model.listPage
 
                 _ ->
                     div [] []
