@@ -39,7 +39,12 @@ view increaseMsg decreaseMsg saveMsg model =
                 , ( "enter-page__save--active", model.dirty )
                 ]
             ]
-            [ button [ onClick saveMsg ] [ text "Save" ] ]
+            [ button
+                [ onClick saveMsg
+                , class "btn"
+                ]
+                [ text "Save" ]
+            ]
         ]
 
 
