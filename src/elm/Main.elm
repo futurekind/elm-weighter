@@ -47,15 +47,22 @@ update msg model =
             ( updatePageIndex touch model, Cmd.none )
 
         IncreaseWeightValue ->
-            ( updateEnterPageWeight model, Cmd.none )
+            ( updateEnterPageWeight 0.1 model, Cmd.none )
 
         DecreseWeightValue ->
-            ( updateEnterPageWeight model, Cmd.none )
+            ( updateEnterPageWeight -0.1 model, Cmd.none )
 
 
-updateEnterPageWeight : Model -> Model
-updateEnterPageWeight model =
-    model
+updateEnterPageWeight : Float -> Model -> Model
+updateEnterPageWeight value model =
+    let
+        enterPage =
+            model.enterPage
+
+        newEnterPage =
+            { enterPage | weight = enterPage.weight + value }
+    in
+        { model | enterPage = newEnterPage }
 
 
 updatePageIndex : TouchEvents.Touch -> Model -> Model

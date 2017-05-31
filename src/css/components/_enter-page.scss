@@ -13,7 +13,10 @@
     height: 70px;
     border: 1px solid #fff;
     border-radius: 50%;
-    background: none;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 100% 100%;
 
     &:focus { outline: none;}
     &:active {
@@ -23,4 +26,12 @@
     & + & {
         margin-left: $nudge--large;
     }
+}
+
+.enter-page__btn--up {
+    background-image: url('../media/up--white.svg');
+}
+
+.enter-page__btn--down {
+    background-image: url('../media/down--white.svg');
 }

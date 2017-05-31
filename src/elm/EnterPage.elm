@@ -41,7 +41,7 @@ buttonView btnType msg =
                     " enter-page__btn--up"
 
                 Down ->
-                    " enter-page__btn--up"
+                    " enter-page__btn--down"
     in
         input
             [ type_ "button"
