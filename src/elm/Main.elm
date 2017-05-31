@@ -10,7 +10,6 @@ import TouchEvents
 type alias Model =
     { pageIndex : Int
     , touchStartX : Float
-    , touchStartWeightValue : Float
     , pages : List Page
     , enterPage : EnterPage.Model
     }
@@ -20,9 +19,9 @@ init : ( Model, Cmd Msg )
 init =
     ( { pageIndex = 0
       , touchStartX = 0.0
-      , touchStartWeightValue = 0.0
       , pages =
             [ { class = "page--enter" }
+            , { class = "page--enter" }
             ]
       , enterPage = EnterPage.init { weight = 85.3 }
       }
@@ -31,8 +30,8 @@ init =
 
 
 type Msg
-    = TouchStart TouchEvents.Touch
-    | TouchEnd TouchEvents.Touch
+    = SlidePageStart TouchEvents.Touch
+    | SlidePageEnd TouchEvents.Touch
     | IncreaseWeightValue
     | DecreseWeightValue
 
@@ -40,10 +39,10 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        TouchStart touch ->
+        SlidePageStart touch ->
             ( { model | touchStartX = touch.clientX }, Cmd.none )
 
-        TouchEnd touch ->
+        SlidePageEnd touch ->
             ( updatePageIndex touch model, Cmd.none )
 
         IncreaseWeightValue ->
@@ -107,8 +106,8 @@ view : Model -> Html Msg
 view model =
     div
         [ class "pages"
-        , TouchEvents.onTouchEvent TouchEvents.TouchStart TouchStart
-        , TouchEvents.onTouchEvent TouchEvents.TouchEnd TouchEnd
+        , TouchEvents.onTouchEvent TouchEvents.TouchStart SlidePageStart
+        , TouchEvents.onTouchEvent TouchEvents.TouchEnd SlidePageEnd
         ]
         (List.indexedMap
             (\index page ->
