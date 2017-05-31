@@ -3,11 +3,11 @@ module EnterPage exposing (view, init, Model)
 import Numeral
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import TouchEvents
 
 
 type alias Model =
-    { count : Float }
+    { weight : Float }
 
 
 init : Model -> Model
@@ -15,12 +15,13 @@ init model =
     model
 
 
-view : msg -> Model -> Html msg
-view msg model =
+view : (TouchEvents.Touch -> msg) -> (TouchEvents.Touch -> msg) -> Model -> Html msg
+view startMsg moveMsg model =
     div [ class "enter-page" ]
         [ h1
             [ class "enter-page__count"
-            , onClick msg
+            , TouchEvents.onTouchEvent TouchEvents.TouchStart startMsg
+            , TouchEvents.onTouchEvent TouchEvents.TouchMove moveMsg
             ]
-            [ Numeral.format "0,00.00" model.count |> text ]
+            [ Numeral.format "0,00.00" model.weight |> text ]
         ]

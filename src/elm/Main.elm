@@ -10,6 +10,7 @@ import TouchEvents
 type alias Model =
     { pageIndex : Int
     , touchStartX : Float
+    , touchStartWeightValue : Float
     , pages : List Page
     , enterPage : EnterPage.Model
     }
@@ -19,10 +20,11 @@ init : ( Model, Cmd Msg )
 init =
     ( { pageIndex = 0
       , touchStartX = 0.0
+      , touchStartWeightValue = 0.0
       , pages =
             [ { class = "page--enter" }
             ]
-      , enterPage = EnterPage.init { count = 85.3 }
+      , enterPage = EnterPage.init { weight = 85.3 }
       }
     , Cmd.none
     )
@@ -31,7 +33,8 @@ init =
 type Msg
     = TouchStart TouchEvents.Touch
     | TouchEnd TouchEvents.Touch
-    | Count
+    | TouchStartWeightValue TouchEvents.Touch
+    | ChangeWeightValue TouchEvents.Touch
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -43,15 +46,45 @@ update msg model =
         TouchEnd touch ->
             ( updatePageIndex touch model, Cmd.none )
 
-        Count ->
-            let
-                enterPage =
-                    model.enterPage
+        TouchStartWeightValue touch ->
+            ( { model | touchStartWeightValue = touch.clientY }, Cmd.none )
 
-                newEnterPage =
-                    { enterPage | count = model.enterPage.count + 1 }
-            in
-                ( { model | enterPage = newEnterPage }, Cmd.none )
+        ChangeWeightValue touch ->
+            ( updateEnterPageWeight touch model, Cmd.none )
+
+
+updateEnterPageWeight : TouchEvents.Touch -> Model -> Model
+updateEnterPageWeight touch model =
+    let
+        direction =
+            TouchEvents.getDirectionY model.touchStartWeightValue touch.clientY
+
+        enterPage =
+            model.enterPage
+
+        delta =
+            model.touchStartWeightValue - touch.clientY |> abs
+    in
+        if delta > 20 then
+            case direction of
+                TouchEvents.Up ->
+                    let
+                        newEnterPage =
+                            { enterPage | weight = model.enterPage.weight + 0.1 }
+                    in
+                        { model | enterPage = newEnterPage }
+
+                TouchEvents.Down ->
+                    let
+                        newEnterPage =
+                            { enterPage | weight = model.enterPage.weight - 0.1 }
+                    in
+                        { model | enterPage = newEnterPage }
+
+                _ ->
+                    model
+        else
+            model
 
 
 updatePageIndex : TouchEvents.Touch -> Model -> Model
@@ -113,7 +146,7 @@ pageView index page model =
         children =
             case index of
                 0 ->
-                    EnterPage.view Count model.enterPage
+                    EnterPage.view TouchStartWeightValue ChangeWeightValue model.enterPage
 
                 _ ->
                     div [] []
