@@ -23,7 +23,7 @@ init =
             [ { class = "page--enter" }
             , { class = "page--enter" }
             ]
-      , enterPage = EnterPage.init { weight = 85.3 }
+      , enterPage = EnterPage.init 85.3
       }
     , Cmd.none
     )
@@ -34,6 +34,7 @@ type Msg
     | SlidePageEnd TouchEvents.Touch
     | IncreaseWeightValue
     | DecreseWeightValue
+    | Save
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -51,6 +52,16 @@ update msg model =
         DecreseWeightValue ->
             ( updateEnterPageWeight -0.1 model, Cmd.none )
 
+        Save ->
+            let
+                enterPage =
+                    model.enterPage
+
+                newEnterPage =
+                    { enterPage | dirty = False }
+            in
+                ( { model | enterPage = newEnterPage }, Cmd.none )
+
 
 updateEnterPageWeight : Float -> Model -> Model
 updateEnterPageWeight value model =
@@ -60,8 +71,11 @@ updateEnterPageWeight value model =
 
         newEnterPage =
             { enterPage | weight = enterPage.weight + value }
+
+        newEnterPageDirty =
+            { newEnterPage | dirty = True }
     in
-        { model | enterPage = newEnterPage }
+        { model | enterPage = newEnterPageDirty }
 
 
 updatePageIndex : TouchEvents.Touch -> Model -> Model
@@ -123,7 +137,7 @@ pageView index page model =
         children =
             case index of
                 0 ->
-                    EnterPage.view IncreaseWeightValue DecreseWeightValue model.enterPage
+                    EnterPage.view IncreaseWeightValue DecreseWeightValue Save model.enterPage
 
                 _ ->
                     div [] []

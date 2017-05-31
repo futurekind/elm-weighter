@@ -7,7 +7,9 @@ import Html.Events exposing (..)
 
 
 type alias Model =
-    { weight : Float }
+    { weight : Float
+    , dirty : Bool
+    }
 
 
 type BtnType
@@ -15,13 +17,15 @@ type BtnType
     | Down
 
 
-init : Model -> Model
-init model =
-    model
+init : Float -> Model
+init weight =
+    { weight = weight
+    , dirty = False
+    }
 
 
-view : msg -> msg -> Model -> Html msg
-view increaseMsg decreaseMsg model =
+view : msg -> msg -> msg -> Model -> Html msg
+view increaseMsg decreaseMsg saveMsg model =
     div [ class "enter-page" ]
         [ h1
             [ class "enter-page__count"
@@ -29,6 +33,13 @@ view increaseMsg decreaseMsg model =
             [ Numeral.format "0,00.00" model.weight |> text ]
         , buttonView Down decreaseMsg
         , buttonView Up increaseMsg
+        , div
+            [ classList
+                [ ( "enter-page__save", True )
+                , ( "enter-page__save--active", model.dirty )
+                ]
+            ]
+            [ button [ onClick saveMsg ] [ text "Save" ] ]
         ]
 
 

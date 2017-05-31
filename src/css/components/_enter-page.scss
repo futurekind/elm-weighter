@@ -35,3 +35,12 @@
 .enter-page__btn--down {
     background-image: url('../media/down--white.svg');
 }
+
+.enter-page__save {
+    opacity: 0;
+    transition: opacity .3s ease-out
+}
+
+.enter-page__save--active {
+    opacity: 1;
+}
