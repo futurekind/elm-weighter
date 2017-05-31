@@ -1,4 +1,26 @@
+.enter-page {
+    text-align: center;
+}
+
 .enter-page__count {
+    margin: 0;
     font-size: 30vw;
     font-weight: 400;
+}
+
+.enter-page__btn {
+    width: 70px;
+    height: 70px;
+    border: 1px solid #fff;
+    border-radius: 50%;
+    background: none;
+
+    &:focus { outline: none;}
+    &:active {
+        transform: scale(.95)
+    }
+
+    & + & {
+        margin-left: $nudge--large;
+    }
 }

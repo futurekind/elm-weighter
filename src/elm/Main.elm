@@ -33,8 +33,8 @@ init =
 type Msg
     = TouchStart TouchEvents.Touch
     | TouchEnd TouchEvents.Touch
-    | TouchStartWeightValue TouchEvents.Touch
-    | ChangeWeightValue TouchEvents.Touch
+    | IncreaseWeightValue
+    | DecreseWeightValue
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -46,45 +46,16 @@ update msg model =
         TouchEnd touch ->
             ( updatePageIndex touch model, Cmd.none )
 
-        TouchStartWeightValue touch ->
-            ( { model | touchStartWeightValue = touch.clientY }, Cmd.none )
+        IncreaseWeightValue ->
+            ( updateEnterPageWeight model, Cmd.none )
 
-        ChangeWeightValue touch ->
-            ( updateEnterPageWeight touch model, Cmd.none )
+        DecreseWeightValue ->
+            ( updateEnterPageWeight model, Cmd.none )
 
 
-updateEnterPageWeight : TouchEvents.Touch -> Model -> Model
-updateEnterPageWeight touch model =
-    let
-        direction =
-            TouchEvents.getDirectionY model.touchStartWeightValue touch.clientY
-
-        enterPage =
-            model.enterPage
-
-        delta =
-            model.touchStartWeightValue - touch.clientY |> abs
-    in
-        if delta > 20 then
-            case direction of
-                TouchEvents.Up ->
-                    let
-                        newEnterPage =
-                            { enterPage | weight = model.enterPage.weight + 0.1 }
-                    in
-                        { model | enterPage = newEnterPage }
-
-                TouchEvents.Down ->
-                    let
-                        newEnterPage =
-                            { enterPage | weight = model.enterPage.weight - 0.1 }
-                    in
-                        { model | enterPage = newEnterPage }
-
-                _ ->
-                    model
-        else
-            model
+updateEnterPageWeight : Model -> Model
+updateEnterPageWeight model =
+    model
 
 
 updatePageIndex : TouchEvents.Touch -> Model -> Model
@@ -146,7 +117,7 @@ pageView index page model =
         children =
             case index of
                 0 ->
-                    EnterPage.view TouchStartWeightValue ChangeWeightValue model.enterPage
+                    EnterPage.view IncreaseWeightValue DecreseWeightValue model.enterPage
 
                 _ ->
                     div [] []
