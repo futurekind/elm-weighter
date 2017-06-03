@@ -1,10 +1,12 @@
 module Main exposing (..)
 
-import Page exposing (Page)
+import Date exposing (Date)
 import EnterPage
-import ListPage
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import ListPage
+import Page exposing (Page)
+import Task
 import TouchEvents
 
 
@@ -19,16 +21,16 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { pageIndex = 1
+    ( { pageIndex = 0
       , touchStartX = 0.0
       , pages =
             [ { class = "page--enter" }
             , { class = "page--list" }
             ]
-      , enterPage = EnterPage.init 85.3
+      , enterPage = EnterPage.init 85.3 Nothing
       , listPage = ListPage.init
       }
-    , Cmd.none
+    , Task.perform NewDate Date.now
     )
 
 
@@ -38,6 +40,7 @@ type Msg
     | IncreaseWeightValue
     | DecreseWeightValue
     | Save
+    | NewDate Date
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -63,7 +66,17 @@ update msg model =
                 newEnterPage =
                     { enterPage | dirty = False }
             in
-                ( { model | enterPage = newEnterPage }, Cmd.none )
+            ( { model | enterPage = newEnterPage }, Cmd.none )
+
+        NewDate date ->
+            let
+                enterPage =
+                    model.enterPage
+
+                newEnterPage =
+                    { enterPage | date = Just date }
+            in
+            ( { model | enterPage = newEnterPage }, Cmd.none )
 
 
 updateEnterPageWeight : Float -> Model -> Model
@@ -78,7 +91,7 @@ updateEnterPageWeight value model =
         newEnterPageDirty =
             { newEnterPage | dirty = True }
     in
-        { model | enterPage = newEnterPageDirty }
+    { model | enterPage = newEnterPageDirty }
 
 
 updatePageIndex : TouchEvents.Touch -> Model -> Model
@@ -90,18 +103,18 @@ updatePageIndex touch model =
         delta =
             model.touchStartX - touch.clientX |> abs
     in
-        if delta > 70 then
-            case direction of
-                TouchEvents.Left ->
-                    { model | pageIndex = getPageIndex (model.pageIndex + 1) (List.length model.pages) }
+    if delta > 70 then
+        case direction of
+            TouchEvents.Left ->
+                { model | pageIndex = getPageIndex (model.pageIndex + 1) (List.length model.pages) }
 
-                TouchEvents.Right ->
-                    { model | pageIndex = getPageIndex (model.pageIndex - 1) (List.length model.pages) }
+            TouchEvents.Right ->
+                { model | pageIndex = getPageIndex (model.pageIndex - 1) (List.length model.pages) }
 
-                _ ->
-                    model
-        else
-            model
+            _ ->
+                model
+    else
+        model
 
 
 getPageIndex : Int -> Int -> Int
@@ -148,7 +161,7 @@ pageView index page model =
                 _ ->
                     div [] []
     in
-        Page.view index model.pageIndex children page
+    Page.view index model.pageIndex children page
 
 
 listPageView : Model -> Html Msg
