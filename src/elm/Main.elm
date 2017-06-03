@@ -1,46 +1,113 @@
 module Main exposing (..)
 
+import Page exposing (Page)
+import EnterPage
+import ListPage
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-import Mouse
+import TouchEvents
 
 
 type alias Model =
-    { pageIndex : Int, dragStartX : Int }
+    { pageIndex : Int
+    , touchStartX : Float
+    , pages : List Page
+    , enterPage : EnterPage.Model
+    , listPage : ListPage.Model
+    }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { pageIndex = 0
-      , dragStartX = 0
+    ( { pageIndex = 1
+      , touchStartX = 0.0
+      , pages =
+            [ { class = "page--enter" }
+            , { class = "page--list" }
+            ]
+      , enterPage = EnterPage.init 85.3
+      , listPage = ListPage.init
       }
     , Cmd.none
     )
 
 
 type Msg
-    = DragStart Mouse.Position
-    | DragEnd Mouse.Position
+    = SlidePageStart TouchEvents.Touch
+    | SlidePageEnd TouchEvents.Touch
+    | IncreaseWeightValue
+    | DecreseWeightValue
+    | Save
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case Debug.log "click" msg of
-        DragStart pos ->
-            ( { model | dragStartX = pos.x }, Cmd.none )
+    case msg of
+        SlidePageStart touch ->
+            ( { model | touchStartX = touch.clientX }, Cmd.none )
 
-        DragEnd pos ->
-            if pos.x < model.dragStartX then
-                ( { model | pageIndex = getPageIndex <| model.pageIndex + 1 }, Cmd.none )
-            else
-                ( { model | pageIndex = getPageIndex <| model.pageIndex - 1 }, Cmd.none )
+        SlidePageEnd touch ->
+            ( updatePageIndex touch model, Cmd.none )
+
+        IncreaseWeightValue ->
+            ( updateEnterPageWeight 0.1 model, Cmd.none )
+
+        DecreseWeightValue ->
+            ( updateEnterPageWeight -0.1 model, Cmd.none )
+
+        Save ->
+            let
+                enterPage =
+                    model.enterPage
+
+                newEnterPage =
+                    { enterPage | dirty = False }
+            in
+                ( { model | enterPage = newEnterPage }, Cmd.none )
 
 
-getPageIndex : Int -> Int
-getPageIndex nextIndex =
-    if nextIndex == 3 then
-        2
+updateEnterPageWeight : Float -> Model -> Model
+updateEnterPageWeight value model =
+    let
+        enterPage =
+            model.enterPage
+
+        newEnterPage =
+            { enterPage | weight = enterPage.weight + value }
+
+        newEnterPageDirty =
+            { newEnterPage | dirty = True }
+    in
+        { model | enterPage = newEnterPageDirty }
+
+
+updatePageIndex : TouchEvents.Touch -> Model -> Model
+updatePageIndex touch model =
+    let
+        direction =
+            TouchEvents.getDirectionX model.touchStartX touch.clientX
+
+        delta =
+            model.touchStartX - touch.clientX |> abs
+    in
+        if delta > 70 then
+            case direction of
+                TouchEvents.Left ->
+                    { model | pageIndex = getPageIndex (model.pageIndex + 1) (List.length model.pages) }
+
+                TouchEvents.Right ->
+                    { model | pageIndex = getPageIndex (model.pageIndex - 1) (List.length model.pages) }
+
+                _ ->
+                    model
+        else
+            model
+
+
+getPageIndex : Int -> Int -> Int
+getPageIndex nextIndex upperEnd =
+    if nextIndex == upperEnd then
+        upperEnd - 1
     else if nextIndex == -1 then
         0
     else
@@ -49,56 +116,45 @@ getPageIndex nextIndex =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ Mouse.downs DragStart
-        , Mouse.ups DragEnd
-        ]
+    Sub.none
 
 
 view : Model -> Html Msg
 view model =
     div
         [ class "pages"
+        , TouchEvents.onTouchEvent TouchEvents.TouchStart SlidePageStart
+        , TouchEvents.onTouchEvent TouchEvents.TouchEnd SlidePageEnd
         ]
-        [ div
-            [ class "page"
-            , style
-                [ ( "background", "red" )
-                , ( "transform", getTranslateValue 0 model.pageIndex )
-                ]
-            ]
-            [ text "Rot" ]
-        , div
-            [ class "page"
-            , style
-                [ ( "background", "green" )
-                , ( "transform", getTranslateValue 1 model.pageIndex )
-                ]
-            ]
-            [ text "green" ]
-        , div
-            [ class "page"
-            , style
-                [ ( "background", "blue" )
-                , ( "transform", getTranslateValue 2 model.pageIndex )
-                ]
-            ]
-            [ text "blue" ]
-        ]
+        (List.indexedMap
+            (\index page ->
+                pageView index page model
+            )
+            model.pages
+        )
 
 
-getTranslateValue : Int -> Int -> String
-getTranslateValue index pageIndex =
+pageView : Int -> Page -> Model -> Html Msg
+pageView index page model =
     let
-        value =
-            if index == pageIndex then
-                0
-            else if index < pageIndex then
-                -100
-            else
-                100
+        children =
+            case index of
+                0 ->
+                    EnterPage.view IncreaseWeightValue DecreseWeightValue Save model.enterPage
+
+                1 ->
+                    ListPage.view model.listPage
+
+                _ ->
+                    div [] []
     in
-    "translateX(" ++ toString value ++ "%)"
+        Page.view index model.pageIndex children page
+
+
+listPageView : Model -> Html Msg
+listPageView model =
+    div [ class "list-page" ]
+        [ h1 [ class "page__title" ] [ text "some title" ] ]
 
 
 main : Program Never Model Msg
