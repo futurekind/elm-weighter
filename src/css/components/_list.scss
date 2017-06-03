@@ -1,0 +1,33 @@
+.list {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.list__block {
+    margin-bottom: 32px;
+}
+
+.list__head {
+    margin: 0;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #fff;
+    font-size: 18px;
+    text-transform: uppercase;
+}
+
+.list__item {
+    padding: 6px 3px;
+    display: flex;
+    font-size: 14px;
+
+    &:nth-child(odd) {
+        background: rgba(#fff, 0.25);
+    }
+}
+
+.list__date {
+    flex: 1;
+}
