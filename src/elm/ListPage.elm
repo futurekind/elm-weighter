@@ -25,28 +25,24 @@ init =
           , value = 100.2
           , title = ""
           }
-        , { date = convertToMaybeDate "2017-05-02"
-          , value = 90.1
+        , { date = convertToMaybeDate "2017-05-18"
+          , value = 98.1
           , title = ""
           }
         , { date = convertToMaybeDate "2017-05-03"
           , value = 90.0
           , title = ""
           }
-        , { date = convertToMaybeDate "2017-05-05"
-          , value = 91.3
+        , { date = convertToMaybeDate "2017-05-01"
+          , value = 91.1
           , title = ""
           }
-        , { date = convertToMaybeDate "2017-05-11"
-          , value = 91.3
+        , { date = convertToMaybeDate "2017-04-24"
+          , value = 90
           , title = ""
           }
-        , { date = convertToMaybeDate "2017-05-12"
-          , value = 91.3
-          , title = ""
-          }
-        , { date = convertToMaybeDate "2017-05-22"
-          , value = 91.3
+        , { date = convertToMaybeDate "2017-04-11"
+          , value = 88.8
           , title = ""
           }
         ]
@@ -103,9 +99,12 @@ getDateString : Maybe Date -> String
 getDateString date =
     case date of
         Just aDate ->
-            toString (Date.day aDate)
-                ++ ". "
-                ++ toString (Date.month aDate)
+            let
+                day =
+                    toFloat (Date.day aDate)
+                        |> Numeral.format "00"
+            in
+            day ++ ". " ++ toString (Date.month aDate)
 
         Nothing ->
             "-"
