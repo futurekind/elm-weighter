@@ -63,10 +63,25 @@ update msg model =
                 enterPage =
                     model.enterPage
 
+                listPage =
+                    model.listPage
+
+                listPageData =
+                    model.listPage.data
+
+                newData =
+                    { date = model.enterPage.date
+                    , value = model.enterPage.weight
+                    , title = ""
+                    }
+
                 newEnterPage =
                     { enterPage | dirty = False }
+
+                newListPage =
+                    { listPage | data = updateListPageData newData model.listPage.data }
             in
-            ( { model | enterPage = newEnterPage }, Cmd.none )
+            ( { model | enterPage = newEnterPage, listPage = newListPage }, Cmd.none )
 
         NewDate date ->
             let
@@ -77,6 +92,23 @@ update msg model =
                     { enterPage | date = Just date }
             in
             ( { model | enterPage = newEnterPage }, Cmd.none )
+
+
+updateListPageData : ListPage.Weight -> List ListPage.Weight -> List ListPage.Weight
+updateListPageData weight data =
+    case List.head data of
+        Just item ->
+            if item.date == weight.date then
+                let
+                    rest =
+                        List.drop 1 data
+                in
+                weight :: rest
+            else
+                weight :: data
+
+        Nothing ->
+            data
 
 
 updateEnterPageWeight : Float -> Model -> Model

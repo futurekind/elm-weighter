@@ -1,4 +1,4 @@
-module ListPage exposing (Model, init, view)
+module ListPage exposing (Model, Weight, init, view)
 
 import Date exposing (Date)
 import Html exposing (..)
