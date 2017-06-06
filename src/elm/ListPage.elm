@@ -1,9 +1,10 @@
-module ListPage exposing (view, init, Model)
+module ListPage exposing (Model, init, view)
 
+import Date exposing (Date)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Date exposing (Date)
 import List.Extra
+import Numeral
 
 
 type alias Weight =
@@ -24,16 +25,24 @@ init =
           , value = 100.2
           , title = ""
           }
-        , { date = convertToMaybeDate "2017-05-02"
-          , value = 90.1
+        , { date = convertToMaybeDate "2017-05-18"
+          , value = 98.1
           , title = ""
           }
         , { date = convertToMaybeDate "2017-05-03"
           , value = 90.0
           , title = ""
           }
-        , { date = convertToMaybeDate "2017-05-05"
-          , value = 91.3
+        , { date = convertToMaybeDate "2017-05-01"
+          , value = 91.1
+          , title = ""
+          }
+        , { date = convertToMaybeDate "2017-04-24"
+          , value = 90
+          , title = ""
+          }
+        , { date = convertToMaybeDate "2017-04-11"
+          , value = 88.8
           , title = ""
           }
         ]
@@ -78,7 +87,7 @@ getTitle date =
         year =
             Date.year date |> toString
     in
-        month ++ " " ++ year
+    month ++ " " ++ year
 
 
 getWeightsForTitle : String -> List Weight -> List Weight
@@ -90,9 +99,12 @@ getDateString : Maybe Date -> String
 getDateString date =
     case date of
         Just aDate ->
-            toString (Date.day aDate)
-                ++ ". "
-                ++ toString (Date.month aDate)
+            let
+                day =
+                    toFloat (Date.day aDate)
+                        |> Numeral.format "00"
+            in
+            day ++ ". " ++ toString (Date.month aDate)
 
         Nothing ->
             "-"
@@ -100,9 +112,13 @@ getDateString date =
 
 viewRow : Weight -> Html msg
 viewRow weight =
-    div []
-        [ span [] [ getDateString (weight.date) |> text ]
-        , span [] [ toString (weight.value) |> text ]
+    div [ class "list__item" ]
+        [ span [ class "list__date" ] [ getDateString weight.date |> text ]
+        , span [ class "list__value" ]
+            [ weight.value
+                |> Numeral.format "0.00"
+                |> text
+            ]
         ]
 
 
@@ -112,10 +128,10 @@ viewHeader title data =
         dataForRow =
             getWeightsForTitle title data
     in
-        div []
-            [ h2 [] [ text title ]
-            , div [] (List.map viewRow dataForRow)
-            ]
+    div [ class "list__block" ]
+        [ h2 [ class "list__head" ] [ text title ]
+        , div [] (List.map viewRow dataForRow)
+        ]
 
 
 view : Model -> Html msg
@@ -124,8 +140,8 @@ view model =
         data =
             dataWithTitles model.data
 
-        header =
+        headers =
             createHeaders data
     in
-        div []
-            (List.map (\title -> viewHeader title data) header)
+    div [ class "list" ]
+        (List.map (\title -> viewHeader title data) headers)
