@@ -1,4 +1,4 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Date exposing (Date)
 import EnterPage
@@ -22,33 +22,36 @@ type alias Model =
     }
 
 
+type alias ServerData =
+    { value : Float, date : String, title : String }
+
+
 init : ( Model, Cmd Msg )
 init =
-    let
-        listPage =
-            ListPage.init
-                [ { value = 98.7, date = convertToMaybeDate "2017-05-30", title = "" }
-                ]
-
-        enterPageInitWeight =
-            case List.head listPage.data of
-                Just weight ->
-                    weight.value
-
-                Nothing ->
-                    100.0
-    in
     ( { pageIndex = 0
       , touchStartX = 0.0
       , pages =
             [ { class = "page--enter" }
             , { class = "page--list" }
             ]
-      , enterPage = EnterPage.init enterPageInitWeight Nothing
-      , listPage = listPage
+      , enterPage = EnterPage.init 0.0 Nothing
+      , listPage = ListPage.init []
       }
-    , Task.perform NewDate Date.now
+    , Cmd.batch
+        [ Task.perform NewDate Date.now
+        , loadData ""
+        ]
     )
+
+
+
+-- PORTS
+
+
+port loadData : String -> Cmd msg
+
+
+port dataFromServer : (List ServerData -> msg) -> Sub msg
 
 
 
@@ -62,11 +65,12 @@ type Msg
     | DecreseWeightValue
     | Save
     | NewDate Date
+    | DataFromServer (List ServerData)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
+    case Debug.log "msg" msg of
         SlidePageStart touch ->
             ( { model | touchStartX = touch.clientX }, Cmd.none )
 
@@ -113,6 +117,33 @@ update msg model =
                     { enterPage | date = Just date }
             in
             ( { model | enterPage = newEnterPage }, Cmd.none )
+
+        DataFromServer data ->
+            let
+                listPage =
+                    model.listPage
+
+                enterPage =
+                    model.enterPage
+
+                newData =
+                    List.map (\item -> { item | date = convertToMaybeDate item.date }) data
+
+                enterPageWeight =
+                    case List.head newData of
+                        Just item ->
+                            item.value
+
+                        Nothing ->
+                            100.0
+
+                newListPage =
+                    { listPage | data = newData }
+
+                newEnterPage =
+                    { enterPage | weight = enterPageWeight }
+            in
+            ( { model | listPage = newListPage, enterPage = newEnterPage }, Cmd.none )
 
 
 updateListPageData : ListPage.Weight -> List ListPage.Weight -> List ListPage.Weight
@@ -200,7 +231,7 @@ convertToMaybeDate dateString =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    dataFromServer DataFromServer
 
 
 
