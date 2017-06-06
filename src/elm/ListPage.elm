@@ -18,45 +18,11 @@ type alias Model =
     { data : List Weight }
 
 
-init : Model
-init =
+init : List Weight -> Model
+init list =
     { data =
-        [ { date = convertToMaybeDate "2017-06-01"
-          , value = 100.2
-          , title = ""
-          }
-        , { date = convertToMaybeDate "2017-05-18"
-          , value = 98.1
-          , title = ""
-          }
-        , { date = convertToMaybeDate "2017-05-03"
-          , value = 90.0
-          , title = ""
-          }
-        , { date = convertToMaybeDate "2017-05-01"
-          , value = 91.1
-          , title = ""
-          }
-        , { date = convertToMaybeDate "2017-04-24"
-          , value = 90
-          , title = ""
-          }
-        , { date = convertToMaybeDate "2017-04-11"
-          , value = 88.8
-          , title = ""
-          }
-        ]
+        list
     }
-
-
-convertToMaybeDate : String -> Maybe Date
-convertToMaybeDate dateString =
-    case Date.fromString dateString of
-        Ok value ->
-            Just value
-
-        Err e ->
-            Nothing
 
 
 dataWithTitles : List Weight -> List Weight

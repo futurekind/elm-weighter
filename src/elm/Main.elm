@@ -10,6 +10,9 @@ import Task
 import TouchEvents
 
 
+-- MODEL
+
+
 type alias Model =
     { pageIndex : Int
     , touchStartX : Float
@@ -28,10 +31,14 @@ init =
             , { class = "page--list" }
             ]
       , enterPage = EnterPage.init 85.3 Nothing
-      , listPage = ListPage.init
+      , listPage = ListPage.init []
       }
     , Task.perform NewDate Date.now
     )
+
+
+
+--UPDATE
 
 
 type Msg
@@ -108,7 +115,7 @@ updateListPageData weight data =
                 weight :: data
 
         Nothing ->
-            data
+            [ weight ]
 
 
 updateEnterPageWeight : Float -> Model -> Model
@@ -149,6 +156,10 @@ updatePageIndex touch model =
         model
 
 
+
+--HELPER
+
+
 getPageIndex : Int -> Int -> Int
 getPageIndex nextIndex upperEnd =
     if nextIndex == upperEnd then
@@ -159,9 +170,27 @@ getPageIndex nextIndex upperEnd =
         nextIndex
 
 
+convertToMaybeDate : String -> Maybe Date
+convertToMaybeDate dateString =
+    case Date.fromString dateString of
+        Ok value ->
+            Just value
+
+        Err e ->
+            Nothing
+
+
+
+--SUBS
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.none
+
+
+
+--VIEW
 
 
 view : Model -> Html Msg
