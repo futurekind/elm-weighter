@@ -24,14 +24,28 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
+    let
+        listPage =
+            ListPage.init
+                [ { value = 98.7, date = convertToMaybeDate "2017-05-30", title = "" }
+                ]
+
+        enterPageInitWeight =
+            case List.head listPage.data of
+                Just weight ->
+                    weight.value
+
+                Nothing ->
+                    100.0
+    in
     ( { pageIndex = 0
       , touchStartX = 0.0
       , pages =
             [ { class = "page--enter" }
             , { class = "page--list" }
             ]
-      , enterPage = EnterPage.init 85.3 Nothing
-      , listPage = ListPage.init []
+      , enterPage = EnterPage.init enterPageInitWeight Nothing
+      , listPage = listPage
       }
     , Task.perform NewDate Date.now
     )
