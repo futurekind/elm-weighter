@@ -141,7 +141,7 @@ update msg model =
                     { listPage | data = newData }
 
                 newEnterPage =
-                    { enterPage | weight = enterPageWeight }
+                    { enterPage | weight = enterPageWeight, loading = False }
             in
             ( { model | listPage = newListPage, enterPage = newEnterPage }, Cmd.none )
 

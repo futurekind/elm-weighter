@@ -11,6 +11,7 @@ type alias Model =
     { weight : Float
     , date : Maybe Date
     , dirty : Bool
+    , loading : Bool
     }
 
 
@@ -24,31 +25,17 @@ init weight date =
     { weight = weight
     , date = date
     , dirty = False
+    , loading = True
     }
 
 
 view : msg -> msg -> msg -> Model -> Html msg
 view increaseMsg decreaseMsg saveMsg model =
     div [ class "enter-page" ]
-        [ dateView model
-        , h1
-            [ class "enter-page__count"
-            ]
-            [ Numeral.format "0,00.00" model.weight |> text ]
-        , buttonView Down decreaseMsg
-        , buttonView Up increaseMsg
-        , div
-            [ classList
-                [ ( "enter-page__save", True )
-                , ( "enter-page__save--active", model.dirty )
-                ]
-            ]
-            [ button
-                [ onClick saveMsg
-                , class "btn"
-                ]
-                [ text "Save" ]
-            ]
+        [ if model.loading == True then
+            div [ class "loader" ] []
+          else
+            contentView increaseMsg decreaseMsg saveMsg model
         ]
 
 
@@ -71,6 +58,31 @@ toDateString date =
                 |> toString
     in
     dayStr ++ ". " ++ monthStr ++ " " ++ yearStr
+
+
+contentView : msg -> msg -> msg -> Model -> Html msg
+contentView increaseMsg decreaseMsg saveMsg model =
+    div []
+        [ dateView model
+        , h1
+            [ class "enter-page__count"
+            ]
+            [ Numeral.format "0,00.00" model.weight |> text ]
+        , buttonView Down decreaseMsg
+        , buttonView Up increaseMsg
+        , div
+            [ classList
+                [ ( "enter-page__save", True )
+                , ( "enter-page__save--active", model.dirty )
+                ]
+            ]
+            [ button
+                [ onClick saveMsg
+                , class "btn"
+                ]
+                [ text "Save" ]
+            ]
+        ]
 
 
 dateView : Model -> Html msg

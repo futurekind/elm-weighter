@@ -1,0 +1,27 @@
+.loader {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #fff;
+    border-radius: 50%;
+    position: relative;
+    background-color: inherit;
+    animation: spin 2s linear infinite;
+
+    &::after {
+        content: '';
+        width: 20px;
+        height: 10px;
+        margin-left: -10px;
+        position: absolute;
+        top: -5px;
+        left: 50%;
+        z-index: 1;
+        background-color: inherit;
+    }
+}
+
+@keyframes spin { 
+    100% { 
+        transform:rotate(360deg); 
+    } 
+}
