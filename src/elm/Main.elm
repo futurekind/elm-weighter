@@ -1,11 +1,16 @@
-module Main exposing (..)
+port module Main exposing (..)
 
-import Page exposing (Page)
+import Date exposing (Date)
 import EnterPage
-import ListPage
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import ListPage
+import Page exposing (Page)
+import Task
 import TouchEvents
+
+
+-- MODEL
 
 
 type alias Model =
@@ -17,19 +22,40 @@ type alias Model =
     }
 
 
+type alias ServerData =
+    { value : Float, date : String, title : String }
+
+
 init : ( Model, Cmd Msg )
 init =
-    ( { pageIndex = 1
+    ( { pageIndex = 0
       , touchStartX = 0.0
       , pages =
             [ { class = "page--enter" }
             , { class = "page--list" }
             ]
-      , enterPage = EnterPage.init 85.3
-      , listPage = ListPage.init
+      , enterPage = EnterPage.init 0.0 Nothing
+      , listPage = ListPage.init []
       }
-    , Cmd.none
+    , Cmd.batch
+        [ Task.perform NewDate Date.now
+        , loadData ""
+        ]
     )
+
+
+
+-- PORTS
+
+
+port loadData : String -> Cmd msg
+
+
+port dataFromServer : (List ServerData -> msg) -> Sub msg
+
+
+
+--UPDATE
 
 
 type Msg
@@ -38,11 +64,13 @@ type Msg
     | IncreaseWeightValue
     | DecreseWeightValue
     | Save
+    | NewDate Date
+    | DataFromServer (List ServerData)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
+    case Debug.log "msg" msg of
         SlidePageStart touch ->
             ( { model | touchStartX = touch.clientX }, Cmd.none )
 
@@ -60,10 +88,79 @@ update msg model =
                 enterPage =
                     model.enterPage
 
+                listPage =
+                    model.listPage
+
+                listPageData =
+                    model.listPage.data
+
+                newData =
+                    { date = model.enterPage.date
+                    , value = model.enterPage.weight
+                    , title = ""
+                    }
+
                 newEnterPage =
                     { enterPage | dirty = False }
+
+                newListPage =
+                    { listPage | data = updateListPageData newData model.listPage.data }
             in
-                ( { model | enterPage = newEnterPage }, Cmd.none )
+            ( { model | enterPage = newEnterPage, listPage = newListPage }, Cmd.none )
+
+        NewDate date ->
+            let
+                enterPage =
+                    model.enterPage
+
+                newEnterPage =
+                    { enterPage | date = Just date }
+            in
+            ( { model | enterPage = newEnterPage }, Cmd.none )
+
+        DataFromServer data ->
+            let
+                listPage =
+                    model.listPage
+
+                enterPage =
+                    model.enterPage
+
+                newData =
+                    List.map (\item -> { item | date = convertToMaybeDate item.date }) data
+
+                enterPageWeight =
+                    case List.head newData of
+                        Just item ->
+                            item.value
+
+                        Nothing ->
+                            100.0
+
+                newListPage =
+                    { listPage | data = newData }
+
+                newEnterPage =
+                    { enterPage | weight = enterPageWeight, loading = False }
+            in
+            ( { model | listPage = newListPage, enterPage = newEnterPage }, Cmd.none )
+
+
+updateListPageData : ListPage.Weight -> List ListPage.Weight -> List ListPage.Weight
+updateListPageData weight data =
+    case List.head data of
+        Just item ->
+            if item.date == weight.date then
+                let
+                    rest =
+                        List.drop 1 data
+                in
+                weight :: rest
+            else
+                weight :: data
+
+        Nothing ->
+            [ weight ]
 
 
 updateEnterPageWeight : Float -> Model -> Model
@@ -78,7 +175,7 @@ updateEnterPageWeight value model =
         newEnterPageDirty =
             { newEnterPage | dirty = True }
     in
-        { model | enterPage = newEnterPageDirty }
+    { model | enterPage = newEnterPageDirty }
 
 
 updatePageIndex : TouchEvents.Touch -> Model -> Model
@@ -90,18 +187,22 @@ updatePageIndex touch model =
         delta =
             model.touchStartX - touch.clientX |> abs
     in
-        if delta > 70 then
-            case direction of
-                TouchEvents.Left ->
-                    { model | pageIndex = getPageIndex (model.pageIndex + 1) (List.length model.pages) }
+    if delta > 70 then
+        case direction of
+            TouchEvents.Left ->
+                { model | pageIndex = getPageIndex (model.pageIndex + 1) (List.length model.pages) }
 
-                TouchEvents.Right ->
-                    { model | pageIndex = getPageIndex (model.pageIndex - 1) (List.length model.pages) }
+            TouchEvents.Right ->
+                { model | pageIndex = getPageIndex (model.pageIndex - 1) (List.length model.pages) }
 
-                _ ->
-                    model
-        else
-            model
+            _ ->
+                model
+    else
+        model
+
+
+
+--HELPER
 
 
 getPageIndex : Int -> Int -> Int
@@ -114,9 +215,27 @@ getPageIndex nextIndex upperEnd =
         nextIndex
 
 
+convertToMaybeDate : String -> Maybe Date
+convertToMaybeDate dateString =
+    case Date.fromString dateString of
+        Ok value ->
+            Just value
+
+        Err e ->
+            Nothing
+
+
+
+--SUBS
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    dataFromServer DataFromServer
+
+
+
+--VIEW
 
 
 view : Model -> Html Msg
@@ -148,7 +267,7 @@ pageView index page model =
                 _ ->
                     div [] []
     in
-        Page.view index model.pageIndex children page
+    Page.view index model.pageIndex children page
 
 
 listPageView : Model -> Html Msg
