@@ -1,5 +1,8 @@
+import URL from 'urijs';
 import { createFontLoader } from './lib/Fontloader';
 import { Main } from '../elm/Main.elm';
+import * as dropbox  from './lib/dropbox';
+import * as api from './lib/api';
 
 /**
  * Beispiel:
@@ -13,6 +16,14 @@ import { Main } from '../elm/Main.elm';
  * })
  */
 const fontLoader = createFontLoader();
+const url = new URL();
+const hashFragment = url.fragment();
+const accessTokenFromHash = dropbox.getAccessTokenInHashFragment(hashFragment)
+
+if(accessTokenFromHash) {
+    dropbox.setAccessToken(accessTokenFromHash)
+    window.location.href = `${url.protocol()}://${url.host()}`
+}
 
 fontLoader.loadAll()
     .then(data => document.documentElement.className += ' fl')
@@ -22,19 +33,18 @@ const app = Main.embed(
     document.getElementById('root')
 )
 
-const dummyApi = () => new Promise(res => {
-    setTimeout(() => {
-        res([
-            { value: 99.8, date: '2017-06-02', title: ''},
-            { value: 100.8, date: '2017-05-15', title: ''},
-            { value: 99.1, date: '2017-05-01', title: ''},
-        ])
-    }, 1000)
-})
+if(dropbox.shouldGetAccessToken()) {
+    dropbox.authorize();
+} else { 
+    app.ports.loadData.subscribe(_ => {
+        api.load()
+            .then(data => {
+                app.ports.dataFromServer.send(JSON.parse(data))
+            })
+    })
 
-app.ports.loadData.subscribe(_ => {
-    dummyApi()
-        .then(data => {
-            app.ports.dataFromServer.send(data)
-        })
-})
+    app.ports.saveData.subscribe(data => {
+        api.save(JSON.stringify(data))
+    })
+}
+
