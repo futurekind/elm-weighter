@@ -11,7 +11,11 @@ export const shouldGetAccessToken = () => {
 }
 
 export const authorize = () => {
-    window.location.href = `${AUTHORIZE_URL}?response_type=token&client_id=${APP_KEY}&redirect_uri=http://localhost:8000/`
+    const redirect = process.env.NODE_ENV === 'production' 
+        ? 'https://futurekind.github.io/elm-weighter/'
+        : 'http://localhost:8000/`'
+
+    window.location.href = `${AUTHORIZE_URL}?response_type=token&client_id=${APP_KEY}&redirect_uri=${redirect}`
 }
 
 export const getAccessTokenInHashFragment = hashStr => {
