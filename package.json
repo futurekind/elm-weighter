@@ -1,6 +1,6 @@
 {
   "name": "elm-weighter",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "main": "src/js/index.js",
   "author": "Fabian Trinler <fabian@blateral.com>",
   "license": "MIT",
