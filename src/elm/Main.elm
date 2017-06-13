@@ -1,6 +1,7 @@
 port module Main exposing (..)
 
 import Date exposing (Date)
+import Date.Extra
 import EnterPage
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -132,7 +133,7 @@ update msg model =
                     model.enterPage
 
                 newData =
-                    List.map (\item -> { item | date = convertToMaybeDate item.date }) data
+                    List.map (\item -> { item | date = Date.Extra.fromIsoString item.date }) data
 
                 enterPageWeight =
                     case List.head newData of
@@ -157,14 +158,19 @@ updateListPageData weight data =
         Just item ->
             case item.date of
                 Just date ->
-                    if item.date == weight.date then
-                        let
-                            rest =
-                                List.drop 1 data
-                        in
-                            weight :: rest
-                    else
-                        weight :: data
+                    case weight.date of
+                        Just weightDate ->
+                            if (Date.Extra.toFormattedString "y-MM-dd" date) == (Date.Extra.toFormattedString "y-MM-dd" weightDate) then
+                                let
+                                    rest =
+                                        List.drop 1 data
+                                in
+                                    weight :: rest
+                            else
+                                weight :: data
+
+                        Nothing ->
+                            [ weight ]
 
                 Nothing ->
                     [ weight ]
@@ -225,23 +231,13 @@ getPageIndex nextIndex upperEnd =
         nextIndex
 
 
-convertToMaybeDate : String -> Maybe Date
-convertToMaybeDate dateString =
-    case Date.fromString dateString of
-        Ok value ->
-            Just value
-
-        Err e ->
-            Nothing
-
-
 convertListPageDataToServerData : List ListPage.Weight -> List ServerData
 convertListPageDataToServerData list =
     let
         dateStr date =
             case date of
                 Just date ->
-                    EnterPage.toDateString date
+                    Date.Extra.toFormattedString "y-MM-dd" date
 
                 Nothing ->
                     "No date"
