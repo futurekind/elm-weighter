@@ -13,7 +13,7 @@ export const shouldGetAccessToken = () => {
 export const authorize = () => {
     const redirect = process.env.NODE_ENV === 'production' 
         ? 'https://futurekind.github.io/elm-weighter/'
-        : 'http://localhost:8000/`'
+        : 'http://localhost:8000/'
 
     window.location.href = `${AUTHORIZE_URL}?response_type=token&client_id=${APP_KEY}&redirect_uri=${redirect}`
 }
