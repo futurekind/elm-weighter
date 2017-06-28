@@ -78,7 +78,21 @@ getDateString date =
 
 getGainLoss : List Weight -> String
 getGainLoss list =
-    "0.25"
+    let
+        valueForPrevDiff currentValue prevValue prevDiff =
+            if prevValue == prevDiff then
+                0.0
+            else
+                currentValue - prevValue + prevDiff
+
+        calc item prev =
+            { value = item.value
+            , diff = valueForPrevDiff item.value prev.value prev.diff
+            }
+    in
+        List.foldr calc { value = 0.0, diff = 0.0 } list
+            |> .diff
+            |> Numeral.format "0.00"
 
 
 viewRow : Weight -> Html msg

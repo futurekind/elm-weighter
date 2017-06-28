@@ -15,6 +15,7 @@
     padding-bottom: 12px;
     border-bottom: 1px solid #fff;
     display: flex;
+    align-items: flex-end;
     font-size: 18px;
     text-transform: uppercase;
 }
@@ -35,4 +36,8 @@
 
 .list__title {
     flex: 1
+}
+
+.list__gain {
+    font-size: 14px;
 }
