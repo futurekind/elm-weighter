@@ -79,19 +79,24 @@ getDateString date =
 getGainLoss : List Weight -> String
 getGainLoss list =
     let
-        valueForPrevDiff currentValue prevValue prevDiff =
-            if prevValue == prevDiff then
-                0.0
-            else
-                currentValue - prevValue + prevDiff
+        last =
+            case List.Extra.last list of
+                Just item ->
+                    item.value
 
-        calc item prev =
-            { value = item.value
-            , diff = valueForPrevDiff item.value prev.value prev.diff
-            }
+                Nothing ->
+                    0.0
+
+        first =
+            case List.head list of
+                Just item ->
+                    item.value
+
+                Nothing ->
+                    0.0
     in
-        List.foldr calc { value = 0.0, diff = 0.0 } list
-            |> .diff
+        first
+            - last
             |> Numeral.format "0.00"
 
 
