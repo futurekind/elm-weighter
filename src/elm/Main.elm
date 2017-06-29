@@ -29,7 +29,7 @@ type alias ServerData =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { pageIndex = 1
+    ( { pageIndex = 0
       , touchStartX = 0.0
       , pages =
             [ { class = "page--enter" }
