@@ -1,4 +1,5 @@
 import URL from 'urijs';
+import fastclick from 'fastclick';
 import { createFontLoader } from './lib/Fontloader';
 import { Main } from '../elm/Main.elm';
 import * as dropbox  from './lib/dropbox';
@@ -28,6 +29,8 @@ if(accessTokenFromHash) {
 fontLoader.loadAll()
     .then(data => document.documentElement.className += ' fl')
     .catch(e => console.warn('Fonts could not be loaded', e))
+
+fastclick.attach(document.body);
 
 const app = Main.embed(
     document.getElementById('root')
