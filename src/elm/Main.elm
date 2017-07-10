@@ -110,9 +110,9 @@ update msg model =
                 newListPage =
                     { listPage | data = updateListPageData newData model.listPage.data }
             in
-                ( { model | enterPage = newEnterPage, listPage = newListPage }
-                , saveData (convertListPageDataToServerData newListPage.data)
-                )
+            ( { model | enterPage = newEnterPage, listPage = newListPage }
+            , saveData (convertListPageDataToServerData newListPage.data)
+            )
 
         NewDate date ->
             let
@@ -122,7 +122,7 @@ update msg model =
                 newEnterPage =
                     { enterPage | date = Just date }
             in
-                ( { model | enterPage = newEnterPage }, Cmd.none )
+            ( { model | enterPage = newEnterPage }, Cmd.none )
 
         DataFromServer data ->
             let
@@ -149,7 +149,7 @@ update msg model =
                 newEnterPage =
                     { enterPage | weight = enterPageWeight, loading = False }
             in
-                ( { model | listPage = newListPage, enterPage = newEnterPage }, Cmd.none )
+            ( { model | listPage = newListPage, enterPage = newEnterPage }, Cmd.none )
 
 
 updateListPageData : ListPage.Weight -> List ListPage.Weight -> List ListPage.Weight
@@ -160,12 +160,12 @@ updateListPageData weight data =
                 Just date ->
                     case weight.date of
                         Just weightDate ->
-                            if (Date.Extra.toFormattedString "y-MM-dd" date) == (Date.Extra.toFormattedString "y-MM-dd" weightDate) then
+                            if Date.Extra.toFormattedString "y-MM-dd" date == Date.Extra.toFormattedString "y-MM-dd" weightDate then
                                 let
                                     rest =
                                         List.drop 1 data
                                 in
-                                    weight :: rest
+                                weight :: rest
                             else
                                 weight :: data
 
@@ -191,7 +191,7 @@ updateEnterPageWeight value model =
         newEnterPageDirty =
             { newEnterPage | dirty = True }
     in
-        { model | enterPage = newEnterPageDirty }
+    { model | enterPage = newEnterPageDirty }
 
 
 updatePageIndex : TouchEvents.Touch -> Model -> Model
@@ -203,18 +203,18 @@ updatePageIndex touch model =
         delta =
             model.touchStartX - touch.clientX |> abs
     in
-        if delta > 70 then
-            case direction of
-                TouchEvents.Left ->
-                    { model | pageIndex = getPageIndex (model.pageIndex + 1) (List.length model.pages) }
+    if delta > 70 then
+        case direction of
+            TouchEvents.Left ->
+                { model | pageIndex = getPageIndex (model.pageIndex + 1) (List.length model.pages) }
 
-                TouchEvents.Right ->
-                    { model | pageIndex = getPageIndex (model.pageIndex - 1) (List.length model.pages) }
+            TouchEvents.Right ->
+                { model | pageIndex = getPageIndex (model.pageIndex - 1) (List.length model.pages) }
 
-                _ ->
-                    model
-        else
-            model
+            _ ->
+                model
+    else
+        model
 
 
 
@@ -245,7 +245,7 @@ convertListPageDataToServerData list =
         toDateString item =
             { item | date = dateStr item.date }
     in
-        List.map toDateString list
+    List.map toDateString list
 
 
 
@@ -290,13 +290,7 @@ pageView index page model =
                 _ ->
                     div [] []
     in
-        Page.view index model.pageIndex children page
-
-
-listPageView : Model -> Html Msg
-listPageView model =
-    div [ class "list-page" ]
-        [ h1 [ class "page__title" ] [ text "some title" ] ]
+    Page.view index model.pageIndex children page
 
 
 main : Program Never Model Msg
