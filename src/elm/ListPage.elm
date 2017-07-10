@@ -53,7 +53,7 @@ getTitle date =
         year =
             Date.year date |> toString
     in
-    month ++ " " ++ year
+        month ++ " " ++ year
 
 
 getWeightsForTitle : String -> List Weight -> List Weight
@@ -70,10 +70,34 @@ getDateString date =
                     toFloat (Date.day aDate)
                         |> Numeral.format "00"
             in
-            day ++ ". " ++ toString (Date.month aDate)
+                day ++ ". " ++ toString (Date.month aDate)
 
         Nothing ->
             "-"
+
+
+getGainLoss : List Weight -> String
+getGainLoss list =
+    let
+        last =
+            case List.Extra.last list of
+                Just item ->
+                    item.value
+
+                Nothing ->
+                    0.0
+
+        first =
+            case List.head list of
+                Just item ->
+                    item.value
+
+                Nothing ->
+                    0.0
+    in
+        first
+            - last
+            |> Numeral.format "0.00"
 
 
 viewRow : Weight -> Html msg
@@ -94,10 +118,13 @@ viewHeader title data =
         dataForRow =
             getWeightsForTitle title data
     in
-    div [ class "list__block" ]
-        [ h2 [ class "list__head" ] [ text title ]
-        , div [] (List.map viewRow dataForRow)
-        ]
+        div [ class "list__block" ]
+            [ h2 [ class "list__head" ]
+                [ span [ class "list__title" ] [ text title ]
+                , span [ class "list__gain" ] [ getGainLoss dataForRow |> text ]
+                ]
+            , div [] (List.map viewRow dataForRow)
+            ]
 
 
 view : Model -> Html msg
@@ -109,5 +136,5 @@ view model =
         headers =
             createHeaders data
     in
-    div [ class "list" ]
-        (List.map (\title -> viewHeader title data) headers)
+        div [ class "list" ]
+            (List.map (\title -> viewHeader title data) headers)

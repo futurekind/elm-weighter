@@ -1,6 +1,7 @@
 port module Main exposing (..)
 
 import Date exposing (Date)
+import Date.Extra
 import EnterPage
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -51,6 +52,9 @@ init =
 port loadData : String -> Cmd msg
 
 
+port saveData : List ServerData -> Cmd msg
+
+
 port dataFromServer : (List ServerData -> msg) -> Sub msg
 
 
@@ -70,7 +74,7 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case Debug.log "msg" msg of
+    case msg of
         SlidePageStart touch ->
             ( { model | touchStartX = touch.clientX }, Cmd.none )
 
@@ -106,7 +110,9 @@ update msg model =
                 newListPage =
                     { listPage | data = updateListPageData newData model.listPage.data }
             in
-            ( { model | enterPage = newEnterPage, listPage = newListPage }, Cmd.none )
+                ( { model | enterPage = newEnterPage, listPage = newListPage }
+                , saveData (convertListPageDataToServerData newListPage.data)
+                )
 
         NewDate date ->
             let
@@ -116,7 +122,7 @@ update msg model =
                 newEnterPage =
                     { enterPage | date = Just date }
             in
-            ( { model | enterPage = newEnterPage }, Cmd.none )
+                ( { model | enterPage = newEnterPage }, Cmd.none )
 
         DataFromServer data ->
             let
@@ -127,7 +133,7 @@ update msg model =
                     model.enterPage
 
                 newData =
-                    List.map (\item -> { item | date = convertToMaybeDate item.date }) data
+                    List.map (\item -> { item | date = Date.Extra.fromIsoString item.date }) data
 
                 enterPageWeight =
                     case List.head newData of
@@ -143,21 +149,31 @@ update msg model =
                 newEnterPage =
                     { enterPage | weight = enterPageWeight, loading = False }
             in
-            ( { model | listPage = newListPage, enterPage = newEnterPage }, Cmd.none )
+                ( { model | listPage = newListPage, enterPage = newEnterPage }, Cmd.none )
 
 
 updateListPageData : ListPage.Weight -> List ListPage.Weight -> List ListPage.Weight
 updateListPageData weight data =
     case List.head data of
         Just item ->
-            if item.date == weight.date then
-                let
-                    rest =
-                        List.drop 1 data
-                in
-                weight :: rest
-            else
-                weight :: data
+            case item.date of
+                Just date ->
+                    case weight.date of
+                        Just weightDate ->
+                            if (Date.Extra.toFormattedString "y-MM-dd" date) == (Date.Extra.toFormattedString "y-MM-dd" weightDate) then
+                                let
+                                    rest =
+                                        List.drop 1 data
+                                in
+                                    weight :: rest
+                            else
+                                weight :: data
+
+                        Nothing ->
+                            [ weight ]
+
+                Nothing ->
+                    [ weight ]
 
         Nothing ->
             [ weight ]
@@ -175,7 +191,7 @@ updateEnterPageWeight value model =
         newEnterPageDirty =
             { newEnterPage | dirty = True }
     in
-    { model | enterPage = newEnterPageDirty }
+        { model | enterPage = newEnterPageDirty }
 
 
 updatePageIndex : TouchEvents.Touch -> Model -> Model
@@ -187,18 +203,18 @@ updatePageIndex touch model =
         delta =
             model.touchStartX - touch.clientX |> abs
     in
-    if delta > 70 then
-        case direction of
-            TouchEvents.Left ->
-                { model | pageIndex = getPageIndex (model.pageIndex + 1) (List.length model.pages) }
+        if delta > 70 then
+            case direction of
+                TouchEvents.Left ->
+                    { model | pageIndex = getPageIndex (model.pageIndex + 1) (List.length model.pages) }
 
-            TouchEvents.Right ->
-                { model | pageIndex = getPageIndex (model.pageIndex - 1) (List.length model.pages) }
+                TouchEvents.Right ->
+                    { model | pageIndex = getPageIndex (model.pageIndex - 1) (List.length model.pages) }
 
-            _ ->
-                model
-    else
-        model
+                _ ->
+                    model
+        else
+            model
 
 
 
@@ -215,14 +231,21 @@ getPageIndex nextIndex upperEnd =
         nextIndex
 
 
-convertToMaybeDate : String -> Maybe Date
-convertToMaybeDate dateString =
-    case Date.fromString dateString of
-        Ok value ->
-            Just value
+convertListPageDataToServerData : List ListPage.Weight -> List ServerData
+convertListPageDataToServerData list =
+    let
+        dateStr date =
+            case date of
+                Just date ->
+                    Date.Extra.toFormattedString "y-MM-dd" date
 
-        Err e ->
-            Nothing
+                Nothing ->
+                    "No date"
+
+        toDateString item =
+            { item | date = dateStr item.date }
+    in
+        List.map toDateString list
 
 
 
@@ -267,7 +290,7 @@ pageView index page model =
                 _ ->
                     div [] []
     in
-    Page.view index model.pageIndex children page
+        Page.view index model.pageIndex children page
 
 
 listPageView : Model -> Html Msg

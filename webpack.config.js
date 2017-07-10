@@ -51,7 +51,9 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'js/[name].bundle.js',
-        publicPath: '/'
+        publicPath: process.env.NODE_ENV === 'production' 
+            ? '/elm-weighter'
+            : '/' 
     },
 
     plugins: plugins,

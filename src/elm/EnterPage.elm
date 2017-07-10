@@ -1,4 +1,4 @@
-module EnterPage exposing (Model, init, view)
+module EnterPage exposing (Model, init, view, toDateString)
 
 import Date exposing (Date)
 import Html exposing (..)
@@ -24,7 +24,7 @@ init : Float -> Maybe Date -> Model
 init weight date =
     { weight = weight
     , date = date
-    , dirty = False
+    , dirty = True
     , loading = True
     }
 
@@ -57,7 +57,7 @@ toDateString date =
                 |> Date.year
                 |> toString
     in
-    dayStr ++ ". " ++ monthStr ++ " " ++ yearStr
+        dayStr ++ ". " ++ monthStr ++ " " ++ yearStr
 
 
 contentView : msg -> msg -> msg -> Model -> Html msg
@@ -110,9 +110,9 @@ buttonView btnType msg =
                 Down ->
                     " enter-page__btn--down"
     in
-    input
-        [ type_ "button"
-        , class <| "enter-page__btn" ++ className
-        , onClick msg
-        ]
-        [ text "down" ]
+        input
+            [ type_ "button"
+            , class <| "enter-page__btn" ++ className
+            , onClick msg
+            ]
+            [ text "down" ]
